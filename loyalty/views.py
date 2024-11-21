@@ -1,15 +1,32 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from .supabase_client import supabase
 import json
 
-# List all available rewards (rewards catalog)
+# Default view for the /loyalty/ path
+def loyalty_home(request):
+    return HttpResponse(
+        "<h1>Welcome to the Loyalty Program</h1>"
+        "<p>Available endpoints:</p>"
+        "<ul>"
+        "<li><a href='/loyalty/offers/'>/loyalty/offers/</a> - List all available rewards</li>"
+        "<li>/loyalty/create-reward/ - Create a new reward (POST)</li>"
+        "<li>/loyalty/total-points/ - Get total points and redemption history</li>"
+        "<li>/loyalty/bonus-points/ - Add bonus points (POST)</li>"
+        "<li>/loyalty/admin/add-reward/ - Admin: Add a new reward (POST)</li>"
+        "</ul>"
+    )
+
+# List all available rewards (rewards catalog) with pagination
 def list_offers(request):
-    response = supabase.table('offers').select('*').execute()
-    if response.status_code == 200:
+    try:
+        response = supabase.table('Offer').select('*').execute()
+        # Check for errors in the response
+        if response.error:
+            return JsonResponse({'error': response.error['message']}, status=400)
         return JsonResponse(response.data, safe=False)
-    else:
-        return JsonResponse({'error': response.error_message}, status=response.status_code)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 # Create a new reward
 @csrf_exempt
@@ -17,20 +34,28 @@ def create_reward(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
+            required_fields = ["reward_name", "points"]
+            for field in required_fields:
+                if field not in data:
+                    return JsonResponse({'error': f'Missing required field: {field}'}, status=400)
+
             reward_data = {
-                "reward_name": data.get("reward_name"),
-                "reward_description": data.get("reward_description"),
+                "reward_name": data["reward_name"],
+                "reward_description": data.get("reward_description", ""),
                 "points": int(data.get("points", 0)),
                 "is_active": True
             }
             response = supabase.table('rewards').insert(reward_data).execute()
-            
+
             if response.status_code == 201:
                 return JsonResponse(response.data, safe=False)
             else:
-                return JsonResponse({'error': response.error_message}, status=response.status_code)
+                error_message = response.error_message or "An unknown error occurred."
+                return JsonResponse({'error': error_message}, status=response.status_code)
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
 
 # Total points earned and redemption history for user profile
 def total_points_earned(request):
