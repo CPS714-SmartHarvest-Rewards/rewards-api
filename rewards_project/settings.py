@@ -85,13 +85,19 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Supabase Configuration
-SUPABASE_URL = os.getenv('SUPABASE_URL')
-SUPABASE_API_KEY = os.getenv('SUPABASE_API_KEY')
+SUPABASE_URL = os.getenv('https://whkhxoqclrbwsapozcsx.supabase.co')
+SUPABASE_API_KEY = os.getenv('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indoa2h4b3FjbHJid3NhcG96Y3N4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA5MjI2OTMsImV4cCI6MjA0NjQ5ODY5M30.r9sVK-h_VhWEaFcpbItsegw3C3ColewPJMqad1xJXkk')
 
 #DATABASES = {
-    
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql',
+#        'NAME': os.getenv('DB_NAME'),
+#        'USER': os.getenv('DB_USER'),
+#        'PASSWORD': os.getenv('DB_PASSWORD'),
+#        'HOST': os.getenv('DB_HOST'),
+#        'PORT': os.getenv('DB_PORT', '5432'),
+#    }
 #}
-
 
 
 # Password validation
