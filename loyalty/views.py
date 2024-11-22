@@ -13,6 +13,21 @@ def loyalty_home(request):
             <li><a href='/loyalty/offers/'>/loyalty/offers/</a> - List all available offers</li>
             <li><a href='/loyalty/rewards/'>/loyalty/rewards/</a> - List all available rewards</li>
             <li>/loyalty/total-points/?user_id=USER_ID - Get user's current points count and total redemption history</li>
+            <li>/loyalty/create-offer/ - Create a new offer (POST)
+                <ul>
+                    <li><strong>Expected JSON Format:</strong>
+                        <pre>
+                            {
+                                "offer_name": "Eco-Friendly Fertilizer Bundle",
+                                "offer_description": "Purchase our eco-friendly fertilizer bundle and earn points",
+                                "awardable_points": 50,
+                                "expiry_date": "2024-03-31T23:59:59Z",  # optional
+                                "is_active": true
+                            }
+                        </pre>
+                    </li>
+                </ul>
+            </li>
             <li>/loyalty/create-reward/ - Create a new reward (POST)
                 <ul>
                     <li><strong>Expected JSON Format:</strong>
@@ -59,32 +74,6 @@ def list_rewards(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-# Create a new reward
-@csrf_exempt
-def create_reward(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)            
-            required_fields = ["reward_name", "points"]
-            for field in required_fields:
-                if field not in data:
-                    return JsonResponse({'error': f'Missing required field: {field}'}, status=500)
-
-            reward_data = {
-                "reward_name": data.get("reward_name"),
-                "reward_description": data.get("reward_description", ""),
-                "points": int(data.get("points")),
-                "is_active": data.get("is_active", True),
-            }
-            response = supabase.table('041_rewards').insert(reward_data).execute()
-            return JsonResponse(response.data, safe=False)
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-    else:
-        return JsonResponse({'error': 'Only POST requests are allowed.'}, status=405)
-
 # Total points earned and redemption history for user profile
 def total_points_earned(request):
     user_id = request.GET.get('user_id')
@@ -111,6 +100,60 @@ def total_points_earned(request):
         })
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+
+# Create a new reward
+@csrf_exempt
+def create_reward(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)            
+            required_fields = ["reward_name", "points"]
+            for field in required_fields:
+                if field not in data:
+                    return JsonResponse({'error': f'Missing required field: {field}'}, status=500)
+
+            reward_data = {
+                "reward_name": data.get("reward_name"),
+                "reward_description": data.get("reward_description", ""),
+                "points": int(data.get("points")),
+                "is_active": data.get("is_active", True),
+            }
+            response = supabase.table('041_rewards').insert(reward_data).execute()
+            return JsonResponse(response.data, safe=False)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Only POST requests are allowed.'}, status=405)
+
+# Create a new offer
+@csrf_exempt
+def create_offer(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            required_fields = ["offer_name", "awardable_points"]
+            for field in required_fields:
+                if field not in data:
+                    return JsonResponse({'error': f'Missing required field: {field}'}, status=400)
+
+            offer_data = {
+                "offer_name": data.get("offer_name"),
+                "offer_description": data.get("offer_description", ""),
+                "awardable_points": int(data.get("awardable_points")),
+                "expiry_date": data.get("expiry_date"),  # Optional
+                "is_active": data.get("is_active", True),
+            }
+            response = supabase.table('offers').insert(offer_data).execute()
+            return JsonResponse(response.data, safe=False, status=201)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Only POST requests are allowed.'}, status=405)
 
 # Redeem a reward
 @csrf_exempt
