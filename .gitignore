@@ -1,3 +1,10 @@
+.env
+
+#i am using a python venv but not recommended to have store in git as you can just use requirements.txt to get it all back.
+rewards_project/venv/
+
+**/__pycache__/
+
 # Compiled class file
 *.class
 

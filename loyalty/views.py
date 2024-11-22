@@ -22,7 +22,7 @@ def list_offers(request):
     try:
         response = supabase.table('Offer').select('*').execute()
         # Check for errors in the response
-        if response.error:
+        if response.error:  #<--- ".error" probably doesn't exist as an attr
             return JsonResponse({'error': response.error['message']}, status=400)
         return JsonResponse(response.data, safe=False)
     except Exception as e:
@@ -45,7 +45,7 @@ def create_reward(request):
                 "points": int(data.get("points", 0)),
                 "is_active": True
             }
-            response = supabase.table('rewards').insert(reward_data).execute()
+            response = supabase.table('04_rewards').insert(reward_data).execute()
 
             if response.status_code == 201:
                 return JsonResponse(response.data, safe=False)
@@ -64,17 +64,18 @@ def total_points_earned(request):
         return JsonResponse({'error': 'User ID is required'}, status=400)
 
     # Fetch points earned by the user
-    points_response = supabase.table('rewards').select('points_earned').eq('user_id', user_id).execute()
-    if points_response.status_code != 200:
-        return JsonResponse({'error': points_response.error_message}, status=points_response.status_code)
+    points_response = supabase.table('04_rewards').select('points').eq('user_id', user_id).execute()
+    
+    # if points_response.status_code != 200: #<--- ".status_code" probably doesn't exist as an attr
+    #     return JsonResponse({'error': points_response.error_message}, status=points_response.status_code)
 
     # Calculate total points
-    total_points = sum(entry.get('points_earned', 0) for entry in points_response.data)
+    total_points = sum(entry.get('points', 0) for entry in points_response.data)
 
     # Fetch redemption history for the user
-    redemption_response = supabase.table('redemptions').select('*').eq('user_id', user_id).execute()
-    if redemption_response.status_code != 200:
-        return JsonResponse({'error': redemption_response.error_message}, status=redemption_response.status_code)
+    redemption_response = supabase.table('Redemptions').select('*').eq('user_id', user_id).execute()
+    # if redemption_response.status_code != 200:  #<--- samething here, ".status_code" probably doesn't exist as an attr
+    #     return JsonResponse({'error': redemption_response.error_message}, status=redemption_response.status_code)
 
     return JsonResponse({
         'user_id': user_id,
@@ -96,7 +97,7 @@ def add_bonus_points(request):
                 return JsonResponse({'error': 'User ID and Event ID are required'}, status=400)
 
             # Check if the user has already received points for this event
-            existing_bonus = supabase.table('bonus_points').select('*').eq('user_id', user_id).eq('event_id', event_id).execute()
+            existing_bonus = supabase.table('bonus_points').select('*').eq('user_id', user_id).eq('event_id', event_id).execute() #<----- FIX: bonus_points TABLE DOES NOT EXIST
             if existing_bonus.data:
                 return JsonResponse({'error': 'Bonus points already awarded for this event'}, status=400)
 
@@ -123,7 +124,7 @@ def admin_add_reward(request):
                 "points": int(data.get("points", 0)),
                 "is_active": True
             }
-            response = supabase.table('rewards').insert(reward_data).execute()
+            response = supabase.table('04_rewards').insert(reward_data).execute()
             return JsonResponse(response.data, safe=False) if response.status_code == 201 else JsonResponse({'error': response.error_message}, status=response.status_code)
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON data'}, status=400)
