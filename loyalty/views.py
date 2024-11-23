@@ -1,5 +1,7 @@
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+
+# from loyalty.models import Redemption
 from .supabase_client import supabase
 import json
 
@@ -180,6 +182,9 @@ def create_redemption(request):
             redemptions_response = supabase.table('redemptions').select('points_redeemed').eq('user_id', user_id).execute()
             total_redeemed_points = sum(entry.get('points_redeemed', 0) for entry in redemptions_response.data)
             available_points = total_earned_points - total_redeemed_points
+
+            # This object needs to be created for testing purposes, can be commented out in production    
+            #Redemption.objects.create(user_id=user_id, reward_id=reward_id, points_redeemed=reward_points)
 
             if available_points < reward_points:
                 return JsonResponse({'error': 'Insufficient points to redeem this reward'}, status=200)
