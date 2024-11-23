@@ -9,4 +9,5 @@ urlpatterns = [
     path('create-offer/', views.create_offer, name='create_offer'),
     path('total-points/', views.total_points_earned, name='total_points_earned'),    
     path('redeem/', views.create_redemption, name='create_redemption'),  # New endpoint to create redemption
+    path('user-rewards/', views.user_rewards, name='user_rewards'),  # New endpoint
 ]
