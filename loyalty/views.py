@@ -10,9 +10,10 @@ def loyalty_home(request):
         <h1>Welcome to the Loyalty Program Backend</h1>
         <p>Available endpoints:</p>
         <ul>
-            <li><a href='/loyalty/offers/'>/loyalty/offers/</a> - List all available offers</li>
-            <li><a href='/loyalty/rewards/'>/loyalty/rewards/</a> - List all available rewards</li>
-            <li>/loyalty/total-points/?user_id=USER_ID - Get user's current points count and total redemption history</li>
+            <li><a href='/loyalty/offers/'>/loyalty/offers/</a> - List all available offers (GET)</li>
+            <li><a href='/loyalty/rewards/'>/loyalty/rewards/</a> - List all available rewards (GET)</li>
+            <li>/loyalty/total-points/?user_id=USER_ID - Get user's current points count and total redemption history (GET) </li>
+            <li>/loyalty/user-rewards/?user_id=USER_ID - List rewards user can redeem (GET)</li>
             <li>/loyalty/create-offer/ - Create a new offer (POST)
                 <ul>
                     <li><strong>Expected JSON Format:</strong>
@@ -199,3 +200,34 @@ def create_redemption(request):
             return JsonResponse({'error': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Only POST requests are allowed.'}, status=405)
+    
+def user_rewards(request):
+    user_id = request.GET.get('user_id')
+    if not user_id:
+        return JsonResponse({'error': 'User ID is required'}, status=400)
+
+    try:
+        # Calculate user's available points
+        earnings_response = supabase.table('earnings').select('points_earned').eq('user_id', user_id).execute()
+        total_earned_points = sum(entry.get('points_earned', 0) for entry in earnings_response.data)
+
+        redemptions_response = supabase.table('redemptions').select('points_redeemed').eq('user_id', user_id).execute()
+        total_redeemed_points = sum(entry.get('points_redeemed', 0) for entry in redemptions_response.data)
+
+        available_points = total_earned_points - total_redeemed_points
+
+        # Fetch all active rewards
+        rewards_response = supabase.table("041_rewards").select('*').eq('is_active', True).execute()
+        if not rewards_response.data:
+            return JsonResponse({'message': 'No rewards available at this time.'}, status=200)
+
+        # Filter rewards that the user can redeem
+        redeemable_rewards = [reward for reward in rewards_response.data if reward['points'] <= available_points]
+
+        return JsonResponse({
+            'user_id': user_id,
+            'available_points': available_points,
+            'redeemable_rewards': redeemable_rewards
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
