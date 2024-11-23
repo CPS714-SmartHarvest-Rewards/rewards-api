@@ -1,0 +1,62 @@
+-- Insert offers into offers table
+INSERT INTO offers (offer_name, offer_description, awardable_points, expiry_date, is_active)
+VALUES
+('Solar-Powered Tractor Discount', 'Get a 10% discount on our new solar-powered tractor', 100, '2025-12-31 23:59:59', TRUE),
+('Electric Harvester Pre-order', 'Earn points when you pre-order our electric harvester', 150, '2024-06-30 23:59:59', TRUE),
+('Eco-Friendly Fertilizer Bundle', 'Purchase our eco-friendly fertilizer bundle and earn points', 50, '2024-03-31 23:59:59', TRUE),
+('Trade-In Program', 'Trade in your old equipment and earn points towards new purchases', 200, NULL, TRUE),
+('Sustainability Workshop', 'Attend our sustainability workshop and earn points', 75, '2024-09-30 23:59:59', TRUE),
+('Referral Program', 'Refer a friend and both of you earn points', 50, NULL, TRUE);
+
+-- Insert rewards into 041_rewards table
+INSERT INTO "041_rewards" (reward_name, reward_description, points, is_active)
+VALUES
+('Free Maintenance Service', 'Get a free maintenance service for your equipment', 200, TRUE),
+('Accessory Pack', 'Receive an accessory pack for your equipment', 150, TRUE),
+('Extended Warranty', 'Get an extended warranty for your purchase', 250, TRUE),
+('VIP Event Invitation', 'Exclusive invitation to our VIP sustainability event', 300, TRUE),
+('Discount on Next Purchase', 'Enjoy a 15% discount on your next purchase', 100, TRUE);
+
+-- Insert redemptions into redemptions table
+INSERT INTO redemptions (reward_id, user_id, points_redeemed)
+VALUES
+(5, 103, 100),       -- User 103 redeems 'Discount on Next Purchase' (100 points)
+(2, 427816, 150),    -- User 427816 redeems 'Accessory Pack' (150 points)
+(1, 104, 200),       -- User 104 redeems 'Free Maintenance Service' (200 points)
+(5, 109, 75),        -- User 109 redeems 'Discount on Next Purchase' (75 points) - Partial redemption
+(3, 427816, 250),    -- User 427816 redeems 'Extended Warranty' (250 points)
+(4, 107, 300),       -- User 107 redeems 'VIP Event Invitation' (300 points)
+(5, 427816, 50),     -- User 427816 redeems 'Discount on Next Purchase' (50 points) - Partial redemption
+(1, 32366, 200);     -- User 32366 redeems 'Free Maintenance Service' (200 points)
+
+-- Insert earnings into earnings table
+INSERT INTO earnings (user_id, earning_type, offer_id, feedback_id, event_id, points_earned)
+VALUES
+-- User 103 (3 earnings: all purchases)
+(103, 0, 1, NULL, NULL, 100),       -- Purchase of offer_id 1
+(103, 0, 2, NULL, NULL, 150),       -- Purchase of offer_id 2
+(103, 0, 3, NULL, NULL, 50),        -- Purchase of offer_id 3
+
+-- User 427816 (4 earnings: 3 purchases, 1 event attendance)
+(427816, 0, 4, NULL, NULL, 200),     -- Purchase of offer_id 4
+(427816, 0, 5, NULL, NULL, 75),      -- Purchase of offer_id 5
+(427816, 0, 6, NULL, NULL, 50),      -- Purchase of offer_id 6
+(427816, 2, NULL, NULL, 3, 75),      -- Event attendance (registration_id 3)
+
+-- User 1 (2 non-offer earnings)
+(1, 1, NULL, 1, NULL, 20),           -- Feedback submission (feedback_id 1)
+(1, 2, NULL, NULL, 1, 50),           -- Event attendance (registration_id 1)
+
+-- User 2 (2 non-offer earnings)
+(2, 1, NULL, 51, NULL, 30),          -- Feedback submission (feedback_id 51)
+(2, 1, NULL, 52, NULL, 40),          -- Feedback submission (feedback_id 52)
+
+-- Other users (8 earnings: all purchases)
+(104, 0, 1, NULL, NULL, 100),        -- Purchase of offer_id 1
+(106, 0, 2, NULL, NULL, 150),        -- Purchase of offer_id 2
+(107, 0, 3, NULL, NULL, 50),         -- Purchase of offer_id 3
+(109, 0, 4, NULL, NULL, 200),        -- Purchase of offer_id 4
+(111, 0, 5, NULL, NULL, 75),         -- Purchase of offer_id 5
+(32366, 0, 6, NULL, NULL, 50),       -- Purchase of offer_id 6
+(109517, 0, 1, NULL, NULL, 100),     -- Purchase of offer_id 1
+(214181, 0, 2, NULL, NULL, 150);     -- Purchase of offer_id 2

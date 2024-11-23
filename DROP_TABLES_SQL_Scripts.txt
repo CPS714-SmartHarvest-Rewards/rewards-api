@@ -1,0 +1,10 @@
+-- Drop all four tables
+BEGIN;
+
+DROP TABLE IF EXISTS redemptions;
+DROP TABLE IF EXISTS earnings;
+DROP TABLE IF EXISTS offers;
+DROP TABLE IF EXISTS "041_rewards";
+
+COMMIT;
+

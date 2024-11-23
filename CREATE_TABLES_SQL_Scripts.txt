@@ -1,0 +1,40 @@
+-- Create the offers table
+CREATE TABLE offers (
+    offer_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    offer_name VARCHAR NOT NULL,
+    offer_description VARCHAR NOT NULL,
+    awardable_points BIGINT NOT NULL,
+    expiry_date TIMESTAMPTZ,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+-- Create the 041_rewards table
+CREATE TABLE "041_rewards" (
+    reward_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    reward_name VARCHAR NOT NULL,
+    reward_description VARCHAR NOT NULL,
+    points BIGINT NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+-- Create the earnings table
+CREATE TABLE earnings (
+    earning_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES "01_users"(user_id),
+    earning_type SMALLINT DEFAULT NULL CHECK (earning_type IN (0, 1, 2)),
+    offer_id BIGINT DEFAULT NULL REFERENCES offers(offer_id),
+    feedback_id BIGINT DEFAULT NULL REFERENCES "07_feedback"(feedback_id),
+    registration_id BIGINT DEFAULT NULL REFERENCES "10_event_registration"(registration_id),
+    points_earned BIGINT NOT NULL,
+    earned_date TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Create the redemptions table
+CREATE TABLE redemptions (
+    redeem_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    reward_id BIGINT NOT NULL REFERENCES "041_rewards"(reward_id),
+    user_id BIGINT NOT NULL REFERENCES "01_users"(user_id),
+    points_redeemed BIGINT NOT NULL,
+    redeemed_date TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
